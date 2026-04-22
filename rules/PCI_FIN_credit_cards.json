@@ -1,0 +1,70 @@
+[
+  {
+    "rule_code": "PCI_FIN_0001",
+    "description": "Detection of Primary Account Numbers (PAN) — Credit Cards",
+    "mitigation": "Ensure logs are masked. Use tokenization or vaulting for sensitive data storage. Apply PCI DSS Requirement 3.4: render PAN unreadable anywhere it is stored.",
+    "patterns": [
+      {
+        "name": "Visa Card",
+        "regex": "\\b4[0-9]{12}(?:[0-9]{3})?\\b",
+        "confidence": "High",
+        "validate_luhn": true
+      },
+      {
+        "name": "MasterCard",
+        "regex": "\\b(?:5[1-5][0-9]{2}|222[1-9]|22[3-9][0-9]|2[3-6][0-9]{2}|27[01][0-9]|2720)[0-9]{12}\\b",
+        "confidence": "High",
+        "validate_luhn": true
+      },
+      {
+        "name": "American Express",
+        "regex": "\\b3[47][0-9]{13}\\b",
+        "confidence": "High",
+        "validate_luhn": true
+      },
+      {
+        "name": "Discover Card",
+        "regex": "\\b6(?:011|5[0-9]{2})[0-9]{12}\\b",
+        "confidence": "High",
+        "validate_luhn": true
+      },
+      {
+        "name": "Diners Club / Carte Blanche",
+        "regex": "\\b3(?:0[0-5]|[68][0-9])[0-9]{11}\\b",
+        "confidence": "High",
+        "validate_luhn": true
+      },
+      {
+        "name": "JCB Card",
+        "regex": "\\b(?:2131|1800|35\\d{3})\\d{11}\\b",
+        "confidence": "High",
+        "validate_luhn": true
+      },
+      {
+        "name": "Generic 16-digit string (possible PAN)",
+        "regex": "\\b\\d{4}[\\s\\-]?\\d{4}[\\s\\-]?\\d{4}[\\s\\-]?\\d{4}\\b",
+        "confidence": "Low",
+        "validate_luhn": false
+      }
+    ]
+  },
+  {
+    "rule_code": "PCI_FIN_0002",
+    "description": "Detection of Card Verification Values (CVV/CVC/CVV2)",
+    "mitigation": "CVV/CVC codes must NEVER be stored after authorization (PCI DSS Requirement 3.2). Remove immediately and audit all log pipelines.",
+    "patterns": [
+      {
+        "name": "CVV context pattern (cvv=NNN or cvc: NNN)",
+        "regex": "(?i)(?:cvv|cvc|cvv2|csc|security[_\\s]?code)[\\s=:\"']+([0-9]{3,4})",
+        "confidence": "High",
+        "validate_luhn": false
+      },
+      {
+        "name": "Standalone 3-digit CVV near card keyword",
+        "regex": "(?i)(?:card|payment|billing).{0,40}\\b([0-9]{3})\\b",
+        "confidence": "Low",
+        "validate_luhn": false
+      }
+    ]
+  }
+]

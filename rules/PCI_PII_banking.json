@@ -1,0 +1,70 @@
+[
+  {
+    "rule_code": "PCI_PII_0001",
+    "description": "Detection of Personally Identifiable Information (PII) related to payment",
+    "mitigation": "PII must be minimized and protected under PCI DSS Requirement 3 and applicable data protection regulations (GDPR, CCPA). Anonymize or pseudonymize data in logs.",
+    "patterns": [
+      {
+        "name": "US Social Security Number",
+        "regex": "\\b(?!000|666|9\\d{2})\\d{3}[\\s\\-](?!00)\\d{2}[\\s\\-](?!0000)\\d{4}\\b",
+        "confidence": "High",
+        "validate_luhn": false
+      },
+      {
+        "name": "US Bank Routing Number (ABA)",
+        "regex": "\\b(?:0[0-9]|1[0-2]|2[1-9]|3[0-2]|6[1-9]|7[0-2]|80)[0-9]{7}\\b",
+        "confidence": "Medium",
+        "validate_luhn": false
+      },
+      {
+        "name": "IBAN (International Bank Account Number)",
+        "regex": "\\b[A-Z]{2}[0-9]{2}[A-Z0-9]{4}[0-9]{7}(?:[A-Z0-9]{0,16})\\b",
+        "confidence": "High",
+        "validate_luhn": false
+      },
+      {
+        "name": "Card expiry date",
+        "regex": "(?i)(?:exp(?:ir(?:y|ation))?|valid[_\\s]?thru)[\\s=:\"']*((0[1-9]|1[0-2])[/\\-]([0-9]{2}|[0-9]{4}))",
+        "confidence": "Medium",
+        "validate_luhn": false
+      },
+      {
+        "name": "Cardholder name pattern",
+        "regex": "(?i)(?:cardholder[_\\s]?name|name[_\\s]?on[_\\s]?card)[\\s=:\"']+([A-Za-z ]{4,40})",
+        "confidence": "Medium",
+        "validate_luhn": false
+      }
+    ]
+  },
+  {
+    "rule_code": "PCI_PII_0002",
+    "description": "Detection of Cryptocurrency wallet addresses and private keys",
+    "mitigation": "Cryptocurrency keys and addresses must never be logged. Rotate any exposed private keys immediately. Use hardware security modules (HSMs) for key storage.",
+    "patterns": [
+      {
+        "name": "Bitcoin address (Legacy P2PKH)",
+        "regex": "\\b[13][a-km-zA-HJ-NP-Z1-9]{25,34}\\b",
+        "confidence": "Medium",
+        "validate_luhn": false
+      },
+      {
+        "name": "Bitcoin address (Bech32 / SegWit)",
+        "regex": "\\bbc1[a-z0-9]{39,59}\\b",
+        "confidence": "Medium",
+        "validate_luhn": false
+      },
+      {
+        "name": "Ethereum address",
+        "regex": "\\b0x[a-fA-F0-9]{40}\\b",
+        "confidence": "Medium",
+        "validate_luhn": false
+      },
+      {
+        "name": "Private key (WIF format)",
+        "regex": "\\b[5KL][1-9A-HJ-NP-Za-km-z]{50,51}\\b",
+        "confidence": "Critical",
+        "validate_luhn": false
+      }
+    ]
+  }
+]

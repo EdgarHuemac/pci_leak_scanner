@@ -1,0 +1,82 @@
+[
+  {
+    "rule_code": "PCI_AUTH_0001",
+    "description": "Detection of Authentication Tokens and API Keys",
+    "mitigation": "Rotate all leaked tokens immediately. Use secret management services (HashiCorp Vault, AWS Secrets Manager). Never log secrets. Apply PCI DSS Requirement 8.2.",
+    "patterns": [
+      {
+        "name": "Bearer Token in Authorization header",
+        "regex": "(?i)Authorization[:\\s]+Bearer\\s+([A-Za-z0-9\\-._~+/]{20,})",
+        "confidence": "High",
+        "validate_luhn": false
+      },
+      {
+        "name": "JWT Token",
+        "regex": "eyJ[A-Za-z0-9_-]{10,}\\.[A-Za-z0-9_-]{10,}\\.[A-Za-z0-9_-]{10,}",
+        "confidence": "High",
+        "validate_luhn": false
+      },
+      {
+        "name": "Generic API Key assignment",
+        "regex": "(?i)(?:api[_\\-]?key|apikey|access[_\\-]?token|secret[_\\-]?key|private[_\\-]?key)[\\s=:\"']+([A-Za-z0-9\\-_]{16,})",
+        "confidence": "High",
+        "validate_luhn": false
+      },
+      {
+        "name": "AWS Access Key ID",
+        "regex": "(?<![A-Z0-9])(AKIA|ASIA|AROA|AIDA)[A-Z0-9]{16}(?![A-Z0-9])",
+        "confidence": "Critical",
+        "validate_luhn": false
+      },
+      {
+        "name": "AWS Secret Access Key",
+        "regex": "(?i)(?:aws[_\\-]?secret|secret[_\\-]?access[_\\-]?key)[\\s=:\"']+([A-Za-z0-9/+]{40})",
+        "confidence": "Critical",
+        "validate_luhn": false
+      },
+      {
+        "name": "GitHub Personal Access Token",
+        "regex": "ghp_[A-Za-z0-9]{36}",
+        "confidence": "Critical",
+        "validate_luhn": false
+      },
+      {
+        "name": "Stripe API Key",
+        "regex": "(?:sk|pk)_(?:live|test)_[A-Za-z0-9]{24,}",
+        "confidence": "Critical",
+        "validate_luhn": false
+      },
+      {
+        "name": "Generic long hex secret",
+        "regex": "(?i)(?:token|secret|key|password|passwd|pwd)[\\s=:\"']+([0-9a-fA-F]{32,})",
+        "confidence": "Medium",
+        "validate_luhn": false
+      }
+    ]
+  },
+  {
+    "rule_code": "PCI_AUTH_0002",
+    "description": "Detection of Passwords and Credentials in Plaintext",
+    "mitigation": "Passwords must never appear in logs. Enforce structured logging with field masking. Rotate any leaked credentials immediately.",
+    "patterns": [
+      {
+        "name": "Password in URL (query string)",
+        "regex": "(?i)[?&](?:password|passwd|pwd|pass)=([^&\\s\"']{4,})",
+        "confidence": "High",
+        "validate_luhn": false
+      },
+      {
+        "name": "Password field assignment",
+        "regex": "(?i)(?:password|passwd|pwd)[\\s=:\"']+([^\\s\"',;]{6,})",
+        "confidence": "Medium",
+        "validate_luhn": false
+      },
+      {
+        "name": "Basic Auth in URL",
+        "regex": "(?i)https?://[^:@/\\s]+:[^@/\\s]+@[^\\s]+",
+        "confidence": "High",
+        "validate_luhn": false
+      }
+    ]
+  }
+]

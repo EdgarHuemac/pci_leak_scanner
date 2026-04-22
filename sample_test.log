@@ -1,0 +1,21 @@
+# Sample application log — contains intentional test PCI data for scanner validation
+# DO NOT use in production. All values below are fake/test data.
+
+2024-01-15 08:23:11 INFO  [PaymentService] Processing payment request for user_id=10482
+2024-01-15 08:23:11 DEBUG [PaymentService] card_number=4532015112830366 amount=150.00 currency=USD
+2024-01-15 08:23:12 INFO  [PaymentService] Authorization headers: Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJ1c2VyXzEwNDgyIiwiaWF0IjoxNzA1MzA3NzkyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk2yJVadQssw5c
+2024-01-15 08:23:12 DEBUG [DB] Connection string: postgresql://admin:P@ssw0rd!Secure@prod-db.internal:5432/payments
+2024-01-15 08:23:13 INFO  [APIGateway] Calling payment processor
+2024-01-15 08:23:13 DEBUG [APIGateway] api_key=sk_live_4eC39HqLyjWDarjtT7jWL
+2024-01-15 08:23:14 INFO  [CardValidator] Validating card for user
+2024-01-15 08:23:14 DEBUG [CardValidator] pan=5425233430109903 cvv=737 exp=09/26 name_on_card=John Doe
+2024-01-15 08:23:15 ERROR [PaymentService] Retry attempt 1 for transaction_id=TXN-9921
+2024-01-15 08:23:16 INFO  [AuditLog] SSN for compliance check: 123-45-6789
+2024-01-15 08:23:16 INFO  [Webhook] Sending callback to https://merchant:secret123@webhook.example.com/callback
+2024-01-15 08:23:17 DEBUG [TokenVault] aws_access_key_id=AKIAIOSFODNN7EXAMPLE
+2024-01-15 08:23:17 DEBUG [TokenVault] aws_secret_access_key=wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY
+2024-01-15 08:23:18 INFO  [PaymentService] Payment completed successfully
+2024-01-15 08:23:18 INFO  [WalletService] Refund to wallet 0x71C7656EC7ab88b098defB751B7401B5f6d8976F
+2024-01-15 08:23:19 INFO  [PaymentService] IBAN stored: GB29NWBK60161331926819
+2024-01-15 08:23:20 INFO  [PaymentService] Transaction for 4111111111111111 ignored (test card)
+2024-01-15 08:23:21 DEBUG [Auth] github_token=ghp_16C7e42F292c6912E7710c838347Ae178B4a
