@@ -1,0 +1,190 @@
+[
+  {
+    "rule_code": "PCI_AUTH_0003",
+    "description": "Detection of cloud, Git, chat, and SaaS credentials commonly leaked into CDE logs and repos.",
+    "mitigation": "Revoke and rotate immediately. These keys often grant production deploy, source, or messaging access adjacent to the CDE. PCI DSS 4.0 Req. 8.6 (application secrets not hard-coded) and Req. 6.2.4 (public-facing web / CI). Store in a secret manager; add provider-specific secret scanning.",
+    "patterns": [
+      {
+        "name": "GitLab personal / deploy / runner token",
+        "regex": "\\bgl(?:pat|dt|rt|cbt|ptt)-[A-Za-z0-9\\-_]{20,}\\b",
+        "confidence": "Critical",
+        "validate_luhn": false
+      },
+      {
+        "name": "Slack bot / user / workspace token",
+        "regex": "\\bxox[baprs]-[A-Za-z0-9-]{10,}\\b",
+        "confidence": "Critical",
+        "validate_luhn": false
+      },
+      {
+        "name": "Slack app-level token",
+        "regex": "\\bxapp-[0-9]+-[A-Za-z0-9-]+\\b",
+        "confidence": "Critical",
+        "validate_luhn": false
+      },
+      {
+        "name": "Slack incoming webhook URL",
+        "regex": "https://hooks\\.slack\\.com/services/T[A-Z0-9]+/B[A-Z0-9]+/[A-Za-z0-9]+",
+        "confidence": "High",
+        "validate_luhn": false
+      },
+      {
+        "name": "Google API key (AIza...)",
+        "regex": "\\bAIza[0-9A-Za-z\\-_]{35}\\b",
+        "confidence": "High",
+        "validate_luhn": false
+      },
+      {
+        "name": "Google OAuth access token (ya29.)",
+        "regex": "\\bya29\\.[0-9A-Za-z\\-_]{20,}\\b",
+        "confidence": "High",
+        "validate_luhn": false
+      },
+      {
+        "name": "GCP / Google service account private_key_id",
+        "regex": "(?i)[\\\"']private_key_id[\\\"']\\s*:\\s*[\\\"'][0-9a-f]{8,}",
+        "confidence": "Critical",
+        "validate_luhn": false
+      },
+      {
+        "name": "Azure storage AccountKey",
+        "regex": "(?i)(?:AccountKey|SharedKey)[=:\\s]+[A-Za-z0-9+/=]{80,}",
+        "confidence": "Critical",
+        "validate_luhn": false
+      },
+      {
+        "name": "Azure SAS signature",
+        "regex": "(?i)[?&]sig=[A-Za-z0-9%+/=]{20,}.*[?&]sv=",
+        "confidence": "High",
+        "validate_luhn": false
+      },
+      {
+        "name": "npm access token",
+        "regex": "\\bnpm_[A-Za-z0-9]{36}\\b",
+        "confidence": "High",
+        "validate_luhn": false
+      },
+      {
+        "name": "PyPI token",
+        "regex": "\\bpypi-AgEIcHlwaS5vcmc[A-Za-z0-9\\-_]{20,}\\b",
+        "confidence": "High",
+        "validate_luhn": false
+      },
+      {
+        "name": "SendGrid API key",
+        "regex": "\\bSG\\.[A-Za-z0-9_-]{16,}\\.[A-Za-z0-9_-]{16,}\\b",
+        "confidence": "High",
+        "validate_luhn": false
+      },
+      {
+        "name": "Twilio Account SID / API key SID",
+        "regex": "\\b(?:AC|SK)[0-9a-f]{32}\\b",
+        "confidence": "High",
+        "validate_luhn": false
+      },
+      {
+        "name": "OpenAI / compatible project key",
+        "regex": "\\bsk-(?:proj|svcacct)-[A-Za-z0-9_-]{20,}\\b",
+        "confidence": "High",
+        "validate_luhn": false
+      },
+      {
+        "name": "Anthropic API key",
+        "regex": "\\bsk-ant-[A-Za-z0-9\\-_]{20,}\\b",
+        "confidence": "High",
+        "validate_luhn": false
+      },
+      {
+        "name": "Hugging Face token",
+        "regex": "\\bhf_[A-Za-z0-9]{20,}\\b",
+        "confidence": "Medium",
+        "validate_luhn": false
+      },
+      {
+        "name": "DigitalOcean PAT",
+        "regex": "\\bdop_v1_[a-f0-9]{64}\\b",
+        "confidence": "High",
+        "validate_luhn": false
+      },
+      {
+        "name": "Telegram bot token",
+        "regex": "\\b[0-9]{8,10}:AA[A-Za-z0-9_-]{30,}\\b",
+        "confidence": "High",
+        "validate_luhn": false
+      },
+      {
+        "name": "Sentry DSN with key",
+        "regex": "https://[0-9a-f]{32}@[A-Za-z0-9.-]+\\.ingest(?:\\.de|\\.us)?\\.sentry\\.io/\\d+",
+        "confidence": "High",
+        "validate_luhn": false
+      }
+    ]
+  },
+  {
+    "rule_code": "PCI_AUTH_0004",
+    "description": "Detection of payment-processor and PSP credentials (beyond Stripe) that grant access to cardholder-data environments.",
+    "mitigation": "These keys are CDE credentials. Rotate via the PSP dashboard, review processed transactions for fraud, and treat exposure as a potential PCI incident. PCI DSS 4.0 Req. 8.6.1 (secrets not in source/logs) and Req. 12.10 if account data may have been accessed.",
+    "patterns": [
+      {
+        "name": "Square access token / secret",
+        "regex": "\\bsq0(?:atp|csp|idp|csp)-[A-Za-z0-9\\-_]{16,}\\b",
+        "confidence": "Critical",
+        "validate_luhn": false
+      },
+      {
+        "name": "Square production token (EAAA prefix)",
+        "regex": "\\bEAAA[A-Za-z0-9]{32,}\\b",
+        "confidence": "High",
+        "validate_luhn": false
+      },
+      {
+        "name": "PayPal / Braintree access token",
+        "regex": "\\baccess_token\\$(?:production|sandbox)\\$[A-Za-z0-9\\-_/]{20,}\\b",
+        "confidence": "Critical",
+        "validate_luhn": false
+      },
+      {
+        "name": "Shopify Admin / private / custom app token",
+        "regex": "\\bshp(?:at|ca|pa|ss)_[A-Za-z0-9]{20,}\\b",
+        "confidence": "Critical",
+        "validate_luhn": false
+      },
+      {
+        "name": "Plaid access token",
+        "regex": "\\baccess-(?:sandbox|development|production)-[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}\\b",
+        "confidence": "Critical",
+        "validate_luhn": false
+      },
+      {
+        "name": "Adyen API key (AQE prefix, common live/test)",
+        "regex": "\\bAQE[A-Za-z0-9]{20,}\\b",
+        "confidence": "High",
+        "validate_luhn": false
+      },
+      {
+        "name": "Checkout.com secret / public key",
+        "regex": "\\b(?:sk|pk)_(?:sbox_)?[a-zA-Z0-9]{26,}\\b",
+        "confidence": "High",
+        "validate_luhn": false
+      },
+      {
+        "name": "Authorize.Net transaction key assignment",
+        "regex": "(?i)\\b(?:transaction[_-]?key|authnet[_-]?key|authorizenet[_-]?key)\\b[\\s=:\\\"']+[A-Za-z0-9]{16,}",
+        "confidence": "Critical",
+        "validate_luhn": false
+      },
+      {
+        "name": "Braintree private key assignment",
+        "regex": "(?i)\\b(?:braintree[_-]?(?:private[_-]?key|merchant[_-]?id)|bt[_-]?private[_-]?key)\\b[\\s=:\\\"']+\\S+",
+        "confidence": "Critical",
+        "validate_luhn": false
+      },
+      {
+        "name": "Worldpay / FIS / CyberSource key assignment",
+        "regex": "(?i)\\b(?:cybersource[_-]?(?:key|secret|merchant)|worldpay[_-]?(?:user|xml[_-]?password)|merchant[_-]?secret[_-]?key)\\b[\\s=:\\\"']+\\S+",
+        "confidence": "Critical",
+        "validate_luhn": false
+      }
+    ]
+  }
+]

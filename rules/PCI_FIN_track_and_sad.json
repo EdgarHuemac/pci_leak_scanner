@@ -1,0 +1,107 @@
+[
+  {
+    "rule_code": "PCI_FIN_0003",
+    "description": "Detection of magnetic-stripe / chip equivalent track data (Track 1, Track 2, Track 3) \u2014 the highest-severity PCI SAD leak.",
+    "mitigation": "PCI DSS 4.0 Req. 3.3.1: full track data must NEVER be stored after authorization, even encrypted. This is a confirmed SAD exposure: isolate affected systems, treat as a potential account-data compromise (Req. 12.10), engage your QSA / incident response, and scrub logs, backups, APM, and ticket attachments. Disable raw ISO 8583 / POS debug dumps in production.",
+    "patterns": [
+      {
+        "name": "Track 1 (ISO 7813 %B...^NAME^YYMM...)",
+        "regex": "%[Bb][0-9]{12,19}\\^[^\\^]{1,26}\\^[0-9]{4}[0-9]{3}[^\\r\\n]*",
+        "confidence": "Critical",
+        "validate_luhn": false
+      },
+      {
+        "name": "Track 2 (ISO 7813 ;PAN=YYMMservice...)",
+        "regex": ";[0-9]{12,19}[=Dd][0-9]{4}[0-9]{3}[0-9A-Za-z]{0,20}\\??",
+        "confidence": "Critical",
+        "validate_luhn": false
+      },
+      {
+        "name": "Track 2 without sentinels (PAN=YYMM in track context)",
+        "regex": "(?i)\\b(?:track\\s*[12]|trk[12]|magnetic[_-]?stripe|disc[_-]?data)\\b[\\s=:\\\"']+[0-9]{12,19}[=Dd][0-9]{4,}",
+        "confidence": "Critical",
+        "validate_luhn": false
+      },
+      {
+        "name": "Labeled Track 1 / Track 2 field",
+        "regex": "(?i)\\b(?:track\\s*[12]|track[_-]?data|track[_-]?[12]|trk[12])\\b[\\s=:\\\"']+[0-9%;Bb][^\\r\\n]{10,}",
+        "confidence": "High",
+        "validate_luhn": false
+      }
+    ]
+  },
+  {
+    "rule_code": "PCI_FIN_0004",
+    "description": "Detection of ISO 8583 / payment-switch dumps that leak PAN, expiry, track, PIN block, or EMV field 55.",
+    "mitigation": "Payment-switch and ISO 8583 debug logs are a classic CDE leak path. Disable DE2/DE14/DE35/DE45/DE52/DE55 in cleartext logs (mask or drop). PCI DSS 4.0 Req. 3.3.1 (SAD) and 3.4.1 (PAN). Confirm host logs, HSM traces, and test simulators are not capturing full fields in production.",
+    "patterns": [
+      {
+        "name": "ISO 8583 DE2 / Field 2 (PAN)",
+        "regex": "(?i)\\b(?:DE0*2|DE-0*2|F0*2|field[_-]?0*2|bit[_-]?0*2)\\b[\\s=:\\\"']+[0-9]{12,19}\\b",
+        "confidence": "Critical",
+        "validate_luhn": true
+      },
+      {
+        "name": "ISO 8583 DE14 / Field 14 (expiry YYMM)",
+        "regex": "(?i)\\b(?:DE0*14|DE-0*14|F0*14|field[_-]?0*14)\\b[\\s=:\\\"']+[0-9]{4}\\b",
+        "confidence": "High",
+        "validate_luhn": false
+      },
+      {
+        "name": "ISO 8583 DE35 / Field 35 (Track 2 equivalent)",
+        "regex": "(?i)\\b(?:DE0*35|DE-0*35|F0*35|field[_-]?0*35)\\b[\\s=:\\\"']+[0-9]{12,19}[=Dd/][0-9]{4,}",
+        "confidence": "Critical",
+        "validate_luhn": false
+      },
+      {
+        "name": "ISO 8583 DE45 / Field 45 (Track 1 equivalent)",
+        "regex": "(?i)\\b(?:DE0*45|DE-0*45|F0*45|field[_-]?0*45)\\b[\\s=:\\\"']+%?[Bb]?[0-9]{12,19}\\^",
+        "confidence": "Critical",
+        "validate_luhn": false
+      },
+      {
+        "name": "ISO 8583 DE52 / Field 52 (PIN block)",
+        "regex": "(?i)\\b(?:DE0*52|DE-0*52|F0*52|field[_-]?0*52)\\b[\\s=:\\\"']+[0-9A-Fa-f]{16}\\b",
+        "confidence": "Critical",
+        "validate_luhn": false
+      },
+      {
+        "name": "ISO 8583 DE55 / Field 55 / ICC / EMV data",
+        "regex": "(?i)\\b(?:DE0*55|DE-0*55|F0*55|field[_-]?0*55|icc[_-]?data|emv[_-]?data|emv[_-]?chip)\\b[\\s=:\\\"']+[0-9A-Fa-f]{20,}",
+        "confidence": "High",
+        "validate_luhn": false
+      }
+    ]
+  },
+  {
+    "rule_code": "PCI_SAD_0001",
+    "description": "Detection of PINs and PIN blocks (sensitive authentication data).",
+    "mitigation": "PCI DSS 4.0 Req. 3.3.1: PINs and PIN blocks must NEVER be stored after authorization. PIN-block leakage implies a CDE logging failure \u2014 treat as SAD compromise. Ensure PIN entry is isolated to PCI-approved POI / HSM and that switch traces log only encrypted PIN-block *presence*, never the value.",
+    "patterns": [
+      {
+        "name": "PIN block assignment (hex / base64)",
+        "regex": "(?i)\\b(?:pin[_-]?block|pinblock|encrypted[_-]?pin|epin|pin[_-]?blk)\\b[\\s=:\\\"']+([0-9A-Fa-f]{16}|[A-Za-z0-9+/]{16,64}={0,2})",
+        "confidence": "Critical",
+        "validate_luhn": false
+      },
+      {
+        "name": "JSON PIN-block field",
+        "regex": "(?i)[\\\"'](?:pinBlock|pin_block|encryptedPin|pinblk)[\\\"']\\s*:\\s*[\\\"'][0-9A-Fa-f]{16,}[\\\"']",
+        "confidence": "Critical",
+        "validate_luhn": false
+      },
+      {
+        "name": "Cleartext PIN assignment (4-12 digits)",
+        "regex": "(?i)\\b(?:pin[_-]?code|pin[_-]?number|card[_-]?pin|atm[_-]?pin|debit[_-]?pin)\\b[\\s=:\\\"']+\\d{4,12}\\b",
+        "confidence": "Critical",
+        "validate_luhn": false
+      },
+      {
+        "name": "JSON pin field with 4-12 digits (not pin=true)",
+        "regex": "(?i)[\\\"']pin[\\\"']\\s*:\\s*[\\\"']?\\d{4,12}\\b",
+        "confidence": "High",
+        "validate_luhn": false
+      }
+    ]
+  }
+]

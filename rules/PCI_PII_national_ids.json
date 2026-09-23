@@ -1,0 +1,57 @@
+[
+  {
+    "rule_code": "PCI_PII_0003",
+    "description": "Detection of additional national identity numbers often stored alongside payment records (KYC dumps).",
+    "mitigation": "KYC documents and national IDs are outside strict CHD but sit next to it in onboarding logs. Minimize, encrypt, and apply retention limits (PCI DSS 4.0 Req. 3.2.1 + privacy law). Never log full ID numbers in application debug.",
+    "patterns": [
+      {
+        "name": "Canadian SIN (labeled)",
+        "regex": "(?i)\\b(?:sin|social[_-]?insurance)\\b[\\s=:\\\"']+\\d{3}[\\s\\-]?\\d{3}[\\s\\-]?\\d{3}\\b",
+        "confidence": "High",
+        "validate_luhn": false
+      },
+      {
+        "name": "UK National Insurance number",
+        "regex": "(?i)\\b(?:nino|national[_-]?insurance)\\b[\\s=:\\\"']+[A-CEGHJ-PR-TW-Z]{2}\\d{6}[A-D]\\b",
+        "confidence": "High",
+        "validate_luhn": false
+      },
+      {
+        "name": "Brazilian CPF (labeled)",
+        "regex": "(?i)\\bcpf\\b[\\s=:\\\"']+\\d{3}\\.?\\d{3}\\.?\\d{3}-?\\d{2}\\b",
+        "confidence": "High",
+        "validate_luhn": false
+      },
+      {
+        "name": "Mexican RFC (labeled, persona fisica)",
+        "regex": "(?i)\\brfc\\b[\\s=:\\\"']+[A-Z\u00d1&]{4}\\d{6}[A-Z0-9]{3}\\b",
+        "confidence": "Medium",
+        "validate_luhn": false
+      },
+      {
+        "name": "Mexican CURP (labeled)",
+        "regex": "(?i)\\bcurp\\b[\\s=:\\\"']+[A-Z]{4}\\d{6}[HM][A-Z]{5}[A-Z0-9]\\d\\b",
+        "confidence": "High",
+        "validate_luhn": false
+      },
+      {
+        "name": "Indian PAN tax ID (labeled)",
+        "regex": "(?i)\\b(?:pan[_-]?card|income[_-]?tax[_-]?pan)\\b[\\s=:\\\"']+[A-Z]{5}[0-9]{4}[A-Z]\\b",
+        "confidence": "Medium",
+        "validate_luhn": false
+      },
+      {
+        "name": "Indian Aadhaar (labeled, 12 digits)",
+        "regex": "(?i)\\baadhaar\\b[\\s=:\\\"']+\\d{4}[\\s\\-]?\\d{4}[\\s\\-]?\\d{4}\\b",
+        "confidence": "High",
+        "validate_luhn": false
+      },
+      {
+        "name": "Passport number (labeled)",
+        "regex": "(?i)\\bpassport[_-]?number\\b[\\s=:\\\"']+[A-Z0-9]{6,12}\\b",
+        "confidence": "Medium",
+        "validate_luhn": false
+      }
+    ]
+  }
+]

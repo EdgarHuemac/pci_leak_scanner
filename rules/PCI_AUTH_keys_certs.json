@@ -1,0 +1,39 @@
+[
+  {
+    "rule_code": "PCI_AUTH_0005",
+    "description": "Detection of private keys, PKCS material, and certificate secrets in cleartext files/logs.",
+    "mitigation": "Private keys in logs or repos mean the key is compromised: revoke/reissue certificates, rotate TLS/mTLS and signing keys, and check whether PAN encryption keys (Req. 3.6 / 3.7) were among them. Store keys in an HSM or KMS. PCI DSS 4.0 Req. 3.6.1.2 / 4.2.1.",
+    "patterns": [
+      {
+        "name": "PEM private key header",
+        "regex": "-----BEGIN (?:RSA |DSA |EC |OPENSSH |ENCRYPTED |ANY )?PRIVATE KEY-----",
+        "confidence": "Critical",
+        "validate_luhn": false
+      },
+      {
+        "name": "PEM PKCS#8 encrypted private key header",
+        "regex": "-----BEGIN ENCRYPTED PRIVATE KEY-----",
+        "confidence": "High",
+        "validate_luhn": false
+      },
+      {
+        "name": "PGP private key block header",
+        "regex": "-----BEGIN PGP PRIVATE KEY BLOCK-----",
+        "confidence": "Critical",
+        "validate_luhn": false
+      },
+      {
+        "name": "JSON Google/GCP private_key field",
+        "regex": "(?i)[\\\"']private_key[\\\"']\\s*:\\s*[\\\"']-----BEGIN",
+        "confidence": "Critical",
+        "validate_luhn": false
+      },
+      {
+        "name": "PKCS#12 / PFX password assignment",
+        "regex": "(?i)\\b(?:pfx[_-]?password|p12[_-]?password|keystore[_-]?password|jks[_-]?password|truststore[_-]?password)\\b[\\s=:\\\"']+\\S+",
+        "confidence": "High",
+        "validate_luhn": false
+      }
+    ]
+  }
+]

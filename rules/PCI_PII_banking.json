@@ -1,8 +1,8 @@
 [
   {
     "rule_code": "PCI_PII_0001",
-    "description": "Detection of Personally Identifiable Information (PII) related to payment",
-    "mitigation": "PII must be minimized and protected under PCI DSS Requirement 3 and applicable data protection regulations (GDPR, CCPA). Anonymize or pseudonymize data in logs.",
+    "description": "Detection of payment-related PII: government IDs, bank account identifiers, card expiry, and cardholder name.",
+    "mitigation": "Minimize PII in logs. PCI DSS 4.0 Req. 3.2 (account data storage) plus GDPR/CCPA. Mask expiry (Req. 3.3.1 still allows expiry to be stored, but logging it next to PAN reconstitutes a usable card). Keep cardholder name out of debug logs.",
     "patterns": [
       {
         "name": "US Social Security Number",
@@ -11,26 +11,74 @@
         "validate_luhn": false
       },
       {
-        "name": "US Bank Routing Number (ABA)",
-        "regex": "\\b(?:0[0-9]|1[0-2]|2[1-9]|3[0-2]|6[1-9]|7[0-2]|80)[0-9]{7}\\b",
-        "confidence": "Medium",
-        "validate_luhn": false
-      },
-      {
-        "name": "IBAN (International Bank Account Number)",
-        "regex": "\\b[A-Z]{2}[0-9]{2}[A-Z0-9]{4}[0-9]{7}(?:[A-Z0-9]{0,16})\\b",
+        "name": "Labeled US SSN",
+        "regex": "(?i)\\b(?:ssn|social[_-]?security(?:[_-]?number)?)\\b[\\s=:\\\"']+\\d{3}[\\s\\-]?\\d{2}[\\s\\-]?\\d{4}\\b",
         "confidence": "High",
         "validate_luhn": false
       },
       {
-        "name": "Card expiry date",
-        "regex": "(?i)(?:exp(?:ir(?:y|ation))?|valid[_\\s]?thru)[\\s=:\"']*((0[1-9]|1[0-2])[/\\-]([0-9]{2}|[0-9]{4}))",
+        "name": "Labeled US ABA routing number",
+        "regex": "(?i)\\b(?:routing[_-]?number|aba[_-]?number|\\brtn\\b|routing[_-]?transit)\\b[\\s=:\\\"']+\\d{9}\\b",
+        "confidence": "High",
+        "validate_luhn": false
+      },
+      {
+        "name": "IBAN (ISO 13616, 2-letter country + 2 check digits)",
+        "regex": "\\b(?:AL|AD|AT|AZ|BH|BE|BA|BR|BG|CR|HR|CY|CZ|DK|DO|EG|SV|EE|FO|FI|FR|GE|DE|GI|GR|GL|GT|HU|IS|IE|IL|IT|JO|KZ|XK|KW|LV|LB|LI|LT|LU|MT|MR|MU|MD|MC|ME|NL|MK|NO|PK|PS|PL|PT|QA|RO|SM|SA|RS|SK|SI|ES|SE|CH|TN|TR|AE|GB|VA|VG)[0-9]{2}[A-Z0-9]{10,30}\\b",
+        "confidence": "High",
+        "validate_luhn": false
+      },
+      {
+        "name": "Labeled IBAN",
+        "regex": "(?i)\\biban\\b[\\s=:\\\"']+[A-Z]{2}[0-9]{2}[A-Z0-9]{10,30}\\b",
+        "confidence": "High",
+        "validate_luhn": false
+      },
+      {
+        "name": "SWIFT / BIC code (8 or 11 chars) with context",
+        "regex": "(?i)\\b(?:swift|bic)[_-]?code\\b[\\s=:\\\"']+[A-Z]{4}[A-Z]{2}[A-Z0-9]{2}(?:[A-Z0-9]{3})?\\b",
         "confidence": "Medium",
         "validate_luhn": false
       },
       {
-        "name": "Cardholder name pattern",
-        "regex": "(?i)(?:cardholder[_\\s]?name|name[_\\s]?on[_\\s]?card)[\\s=:\"']+([A-Za-z ]{4,40})",
+        "name": "Card expiry date (labeled)",
+        "regex": "(?i)(?:exp(?:ir(?:y|ation|es))?|valid[_-]?thru|valid[_-]?until|exp(?:_date|Date)|YYMM)[\\s=:\\\"']*((?:0[1-9]|1[0-2])[/\\-](?:[0-9]{2}|[0-9]{4})|[0-9]{4})",
+        "confidence": "Medium",
+        "validate_luhn": false
+      },
+      {
+        "name": "JSON expiry / exp_month+exp_year",
+        "regex": "(?i)[\\\"'](?:exp(?:_?month|iry)|expiryMonth)[\\\"']\\s*:\\s*[\\\"']?\\d{1,2}",
+        "confidence": "Medium",
+        "validate_luhn": false
+      },
+      {
+        "name": "Cardholder name (labeled)",
+        "regex": "(?i)(?:cardholder[_-]?name|name[_-]?on[_-]?card|card[_-]?holder|chname)[\\s=:\\\"']+([A-Za-z][A-Za-z .,'\\-]{2,40})",
+        "confidence": "Medium",
+        "validate_luhn": false
+      },
+      {
+        "name": "UK sort code + account number (labeled)",
+        "regex": "(?i)\\b(?:sort[_-]?code)\\b[\\s=:\\\"']+\\d{2}[- ]?\\d{2}[- ]?\\d{2}\\b",
+        "confidence": "Medium",
+        "validate_luhn": false
+      },
+      {
+        "name": "Australian BSB (labeled)",
+        "regex": "(?i)\\bbsb\\b[\\s=:\\\"']+\\d{3}-?\\d{3}\\b",
+        "confidence": "Medium",
+        "validate_luhn": false
+      },
+      {
+        "name": "Mexican CLABE (18 digits, labeled)",
+        "regex": "(?i)\\bclabe\\b[\\s=:\\\"']+\\d{18}\\b",
+        "confidence": "High",
+        "validate_luhn": false
+      },
+      {
+        "name": "Labeled bank account number",
+        "regex": "(?i)\\b(?:bank[_-]?account[_-]?number|account[_-]?no|acct[_-]?no|iban[_-]?acct)\\b[\\s=:\\\"']+[0-9]{6,18}\\b",
         "confidence": "Medium",
         "validate_luhn": false
       }
@@ -38,31 +86,67 @@
   },
   {
     "rule_code": "PCI_PII_0002",
-    "description": "Detection of Cryptocurrency wallet addresses and private keys",
-    "mitigation": "Cryptocurrency keys and addresses must never be logged. Rotate any exposed private keys immediately. Use hardware security modules (HSMs) for key storage.",
+    "description": "Detection of cryptocurrency wallet addresses, seeds, and private keys.",
+    "mitigation": "Crypto private keys and seed phrases are equivalent to cash. Rotate/sweep funds immediately if a private key or mnemonic leaked. Hardware wallets / HSMs only. Addresses alone are less severe but still PII/financial identifiers in many contexts.",
     "patterns": [
       {
-        "name": "Bitcoin address (Legacy P2PKH)",
+        "name": "Bitcoin address (Legacy P2PKH / P2SH)",
         "regex": "\\b[13][a-km-zA-HJ-NP-Z1-9]{25,34}\\b",
         "confidence": "Medium",
         "validate_luhn": false
       },
       {
-        "name": "Bitcoin address (Bech32 / SegWit)",
-        "regex": "\\bbc1[a-z0-9]{39,59}\\b",
+        "name": "Bitcoin Bech32 SegWit (bc1q...)",
+        "regex": "\\bbc1q[a-z0-9]{38,58}\\b",
         "confidence": "Medium",
         "validate_luhn": false
       },
       {
-        "name": "Ethereum address",
+        "name": "Bitcoin Taproot (bc1p...)",
+        "regex": "\\bbc1p[a-z0-9]{38,58}\\b",
+        "confidence": "Medium",
+        "validate_luhn": false
+      },
+      {
+        "name": "Ethereum / EVM address",
         "regex": "\\b0x[a-fA-F0-9]{40}\\b",
         "confidence": "Medium",
         "validate_luhn": false
       },
       {
-        "name": "Private key (WIF format)",
+        "name": "WIF private key (Bitcoin)",
         "regex": "\\b[5KL][1-9A-HJ-NP-Za-km-z]{50,51}\\b",
         "confidence": "Critical",
+        "validate_luhn": false
+      },
+      {
+        "name": "BIP32 extended private key (xprv/yprv/zprv)",
+        "regex": "\\b[xyz]prv[1-9A-HJ-NP-Za-km-z]{80,}\\b",
+        "confidence": "Critical",
+        "validate_luhn": false
+      },
+      {
+        "name": "Ethereum private key (32-byte hex, labeled)",
+        "regex": "(?i)(?:eth(?:ereum)?[_-]?private[_-]?key|priv[_-]?key|privatekey)[\\s=:\\\"']+(?:0x)?[a-fA-F0-9]{64}\\b",
+        "confidence": "Critical",
+        "validate_luhn": false
+      },
+      {
+        "name": "BIP39 seed / mnemonic phrase label",
+        "regex": "(?i)\\b(?:seed[_-]?phrase|recovery[_-]?phrase|mnemonic[_-]?phrase|bip39)\\b[\\s=:\\\"']+[a-z]+(?:\\s+[a-z]+){11,23}\\b",
+        "confidence": "Critical",
+        "validate_luhn": false
+      },
+      {
+        "name": "Litecoin address (L/M/ltc1)",
+        "regex": "\\b(?:[LM][a-km-zA-HJ-NP-Z1-9]{26,33}|ltc1[a-z0-9]{25,59})\\b",
+        "confidence": "Low",
+        "validate_luhn": false
+      },
+      {
+        "name": "Solana address (labeled, base58 32-44)",
+        "regex": "(?i)\\bsolana[_-]?(?:address|wallet|pubkey)\\b[\\s=:\\\"']+[1-9A-HJ-NP-Za-km-z]{32,44}\\b",
+        "confidence": "Medium",
         "validate_luhn": false
       }
     ]

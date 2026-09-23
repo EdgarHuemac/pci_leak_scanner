@@ -1,0 +1,37 @@
+# Extended PCI leak corpus for the new rule pack. All values are fake.
+# Drop-in test: python pci_scanner.py scan sample_extended.log --rules-dir ./rules -v
+
+# --- PANs (brand, spaced, extra schemes) ---
+2024-06-01 DEBUG [Pay] visa=4532015112830366
+2024-06-01 DEBUG [Pay] visa_spaced=4532-0151-1283-0366
+2024-06-01 DEBUG [Pay] visa19=4000000000000000006
+2024-06-01 DEBUG [Pay] mc=5425233430109903
+2024-06-01 DEBUG [Pay] amex_spaced=3782 822463 10005
+2024-06-01 DEBUG [Pay] unionpay=6250941006528599
+2024-06-01 DEBUG [Pay] maestro=6759649826438453
+2024-06-01 DEBUG [Pay] mir=2200000000000004
+2024-06-01 DEBUG [Pay] jcb=3528000000000007
+2024-06-01 DEBUG [Pay] overmask=45320151******0366
+2024-06-01 DEBUG [Pay] {"cardNumber":"4532015112830366","cvv":"737","exp":"09/26"}
+2024-06-01 DEBUG [Pay] <cvv>737</cvv> cid=1234 security_code=456
+
+# --- Track data / ISO 8583 / PIN (SAD — never store) ---
+2024-06-01 DEBUG [POS] track1=%B4532015112830366^DOE/JOHN^25121010000000000000000?
+2024-06-01 DEBUG [POS] track2=;4532015112830366=25121010000000000000?
+2024-06-01 DEBUG [Switch] DE2=4532015112830366 DE35=4532015112830366=2512101 DE52=0123456789ABCDEF
+2024-06-01 DEBUG [HSM] pin_block=0123456789ABCDEF pin_code=1234
+
+# --- Secrets / PSP / cloud ---
+2024-06-01 DEBUG [API] Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJ1c2VyXzEwNDgyIiwiaWF0IjoxNzA1MzA3NzkyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk2yJVadQssw5c
+2024-06-01 DEBUG [API] api_key=sk_live_4eC39HqLyjWDarjtT7jWL whsec_abcdefghijklmnopqrstuvwxyz012345
+2024-06-01 DEBUG [API] github_pat_abcdefghijklmnopqrstuv_abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456
+2024-06-01 DEBUG [API] glpat-abcdefghijklmnopqrst xoxb-123456789012-123456789012-abcdefghijklmnopqrstuvwx
+2024-06-01 DEBUG [API] sq0atp-abcdefghijklmnopqrst shpat_abcdefghijklmnopqrstuvwxyz
+2024-06-01 DEBUG [DB] postgresql://admin:P@ssw0rd!Secure@prod-db.internal:5432/payments
+2024-06-01 DEBUG [TLS] -----BEGIN RSA PRIVATE KEY-----
+
+# --- PII / banking / crypto ---
+2024-06-01 INFO  [KYC] ssn=123-45-6789 iban=GB29NWBK60161331926819 clabe=032180000118359719
+2024-06-01 INFO  [KYC] cpf=123.456.789-09 aadhaar=1234 5678 9012
+2024-06-01 INFO  [WALLET] seed_phrase=witch collapse practice feed shame open despair creek road again ice least
+2024-06-01 INFO  [WALLET] xprv9s21ZrQH143K3QTDL4LXw2F7HEK3wJUD2nW2nRk4stbPy6cq3jPPqjiChkVvvNKmPGJxWUtg6LnF5kejMRNNU3TGtRBeJgk33yuGBxrMPHi
